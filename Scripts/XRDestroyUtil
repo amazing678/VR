@@ -1,0 +1,52 @@
+using System.Collections;
+using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+
+public static class XRDestroyUtil
+{
+    public static void SafeDestroy(MonoBehaviour owner, GameObject target)
+    {
+        if (owner == null || target == null)
+        {
+            return;
+        }
+
+        owner.StartCoroutine(SafeDestroyCoroutine(target));
+    }
+
+    private static IEnumerator SafeDestroyCoroutine(GameObject target)
+    {
+        if (target == null)
+        {
+            yield break;
+        }
+
+        XRSimpleInteractable[] interactables =
+            target.GetComponentsInChildren<XRSimpleInteractable>(true);
+
+        foreach (XRSimpleInteractable interactable in interactables)
+        {
+            if (interactable != null)
+            {
+                interactable.enabled = false;
+            }
+        }
+
+        Collider[] colliders = target.GetComponentsInChildren<Collider>(true);
+        foreach (Collider collider in colliders)
+        {
+            if (collider != null)
+            {
+                collider.enabled = false;
+            }
+        }
+
+        // 等一帧，让 XRInteractionManager 有时间处理 unregister / hover exit
+        yield return null;
+
+        if (target != null)
+        {
+            Object.Destroy(target);
+        }
+    }
+}
