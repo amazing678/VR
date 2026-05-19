@@ -1,1 +1,31 @@
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
+public class GameBackMain : MonoBehaviour
+{
+    void OnEnable()
+    {
+        // 监听 WebSocket 广播
+        WebSocketManager.OnVideoCommandReceived += HandleGameCommand;
+    }
+
+    void OnDisable()
+    {
+        WebSocketManager.OnVideoCommandReceived -= HandleGameCommand;
+    }
+
+    private void HandleGameCommand(WsVideoControlMessage msg)
+    {
+        // 监听游戏停止指令
+        if (msg.subType == 3102)
+        {
+            Debug.Log("[VR游戏管理] 收到游戏停止指令，准备退回登录场景...");
+
+            //保持已绑定的在线状态！
+            LogicManager.preserveStateOnLoad = true;
+
+            // 退回登录场景
+            SceneManager.LoadScene("NewMain");
+        }
+    }
+}
